@@ -42,16 +42,17 @@ public class UserDAO extends User {
         try (Connection conn = DbUtils.getConnection()) {
             Statement statement = conn.createStatement();
             ResultSet resultSet = statement.executeQuery(READ_USER_QUERY.replace("(?)", String.valueOf(userId)));
-            while (resultSet.next()) {
+            if (resultSet.next()) {
                 user.setId(resultSet.getInt("id"));
                 user.setEmail(resultSet.getString("email"));
                 user.setPassword(resultSet.getString("password"));
                 user.setUserName(resultSet.getString("username"));
+                return user;
             }
         } catch (SQLException e) {
-
+            e.printStackTrace();
         }
-        return user;
+        return null;
     }
 
 
