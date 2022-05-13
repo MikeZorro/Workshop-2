@@ -1,6 +1,7 @@
 package UserDAO;
 
 import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
 import java.sql.PreparedStatement;
 
@@ -8,9 +9,14 @@ public class UserDAO extends User {
     private static final String CREATE_USER_QUERY =
             "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
 
+    private static final String READ_USER_QUERY =
+            "SELECT * FROM users where id =(?)";
+
+
     public String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
+
     public User create(User user) {
         try (Connection conn = DbUtils.getConnection()) {
             PreparedStatement statement =
@@ -31,6 +37,22 @@ public class UserDAO extends User {
         }
     }
 
+    public User read(int userId) {
+        User user = new User();
+        try (Connection conn = DbUtils.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(READ_USER_QUERY.replace("(?)", String.valueOf(userId)));
+            while (resultSet.next()) {
+                user.setId(resultSet.getInt("id"));
+                user.setEmail(resultSet.getString("email"));
+                user.setPassword(resultSet.getString("password"));
+                user.setUserName(resultSet.getString("username"));
+            }
+        } catch (SQLException e) {
+
+        }
+        return user;
+    }
 
 
 }
