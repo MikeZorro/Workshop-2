@@ -12,6 +12,8 @@ public class UserDAO extends User {
     private static final String READ_USER_QUERY =
             "SELECT * FROM users where id =(?)";
 
+    private static final String UPDATE_USER_QUERY =
+            "UPDATE users SET username = ?, email = ?, password = ? where id = ?";
 
     public String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
@@ -25,7 +27,6 @@ public class UserDAO extends User {
             statement.setString(2, user.getEmail());
             statement.setString(3, hashPassword(user.getPassword()));
             statement.executeUpdate();
-            //Pobieramy wstawiony do bazy identyfikator, a następnie ustawiamy id obiektu user.
             ResultSet resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
                 user.setId(resultSet.getInt(1));
@@ -55,5 +56,18 @@ public class UserDAO extends User {
         return null;
     }
 
+    public void update(User user) {
+        try (Connection conn = DbUtils.getConnection()) {
+        PreparedStatement preparedStatement = conn.prepareStatement(UPDATE_USER_QUERY);
+        preparedStatement.setInt(4, user.getId());
+        preparedStatement.setString(1, user.getUserName());
+        preparedStatement.setString(2, user.getEmail());
+        preparedStatement.setString(3, this.hashPassword(user.getPassword()));
+        preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
